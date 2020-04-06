@@ -16,7 +16,7 @@
         android:textColor="@android:color/white" />
 
     <TextView
-        android:id="@+id/text_question_count"
+        android:id="@+id/text_view_question_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_view_score"

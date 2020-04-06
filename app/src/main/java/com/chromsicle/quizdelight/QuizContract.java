@@ -1,6 +1,9 @@
 package com.chromsicle.quizdelight;
 
+//a contract class, holds the constants for the database table
 //this class only provides the constants
+//the open helper class will use these constants to create the actual sqlite database
+
 
 import android.provider.BaseColumns;
 
@@ -30,3 +33,4 @@ public final class QuizContract {
     }
 
 }
+

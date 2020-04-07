@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -15,11 +16,17 @@ import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class QuizActivity extends AppCompatActivity {
     //used to send the score result to the main activity
     public static final String EXTRA_SCORE = "extraScore";
 
+    //timer stuff, time and color
+    private static final long COUNTDOWN_IN_MILLIS = 15000; //seconds*1000
+    private ColorStateList textColorDefaultCd;
+    private CountDownTimer countDownTimer;
+    private long timeLeftInMillis;
 
     //create variables to get references to all the views in the layout
     private TextView textViewQuestion;
@@ -64,8 +71,9 @@ public class QuizActivity extends AppCompatActivity {
         rb4 = findViewById(R.id.radio_button4);
         buttonConfirmNext = findViewById(R.id.button_confirm_next);
 
-        //stores the default color of the radio button
+        //stores the default color of the radio button and timer
         textColorDefaultRb = rb1.getTextColors();
+        textColorDefaultCd = textViewCountDown.getTextColors();
 
         //initialize the QuizDBHelper
         QuizDbHelp dbHelper = new QuizDbHelp(this);
@@ -126,14 +134,57 @@ public class QuizActivity extends AppCompatActivity {
             answered = false;
             //when the answer is locked, change the text to "next" but if it's not (false) chang it to "confirm"
             buttonConfirmNext.setText("confirm");
+
+            //when the question starts, give the timer 30 seconds
+            timeLeftInMillis = COUNTDOWN_IN_MILLIS;
+            startCountDown();
         } else {
             //there's no more questions
             finishQuiz();
         }
     }
 
+    private void startCountDown() {
+        countDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                timeLeftInMillis = millisUntilFinished;
+                updateCountDownText();
+            }
+
+            @Override
+            public void onFinish() {
+                //the time skips the last onTick so it displays 1 even though it's finished, this fixes that
+                timeLeftInMillis = 0;
+                updateCountDownText();
+                checkAnswer(); //locks an answer if one is selected when timer runs out
+            }
+        }.start();
+    }
+
+    private void updateCountDownText() {
+        //get the minutes and seconds
+        int minutes = (int) (timeLeftInMillis / 1000) / 60;
+        int seconds = (int) (timeLeftInMillis / 1000) % 60;
+
+        //make a string with the minutes and seconds
+        String timeFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+
+        //set the timer to the minutes and seconds string
+        textViewCountDown.setText(timeFormatted);
+
+        //change text color if below 10 seconds
+        if (timeLeftInMillis < 10000) {
+            textViewCountDown.setTextColor(Color.RED);
+        } else {
+            textViewCountDown.setTextColor(textColorDefaultCd);
+        }
+    }
+
     private void checkAnswer() {
         answered = true;
+
+        countDownTimer.cancel();
 
         //get the selected radio button
         RadioButton rbSelected = findViewById(rbGroup.getCheckedRadioButtonId());
@@ -205,5 +256,15 @@ public class QuizActivity extends AppCompatActivity {
         }
 
         backPressedTime = System.currentTimeMillis();
+    }
+
+    //when activity is finished, cancel the countdown timer so it's not running in the background
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //time has to have actually been started in order to cancel it, otherwise app will crash
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
     }
 }

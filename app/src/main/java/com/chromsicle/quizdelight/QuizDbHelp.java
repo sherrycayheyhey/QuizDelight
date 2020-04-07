@@ -87,10 +87,10 @@ public class QuizDbHelp extends SQLiteOpenHelper {
     }
 
     //the quiz questions have already been saved but this method will allow them to be retrieved
-    public List<Question> getAllQuestions() {
+    public ArrayList<Question> getAllQuestions() {
         //make an arraylist
         //a new arrayrist is made because List is just an interface so you can't create a new List
-        List<Question> questionList = new ArrayList<>();
+        ArrayList<Question> questionList = new ArrayList<>();
 
         //get the reference to the database so we can get the data out of there
         //the first time this is called it will call the database onCreate method and create the database

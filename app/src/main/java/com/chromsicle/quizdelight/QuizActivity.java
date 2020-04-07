@@ -2,6 +2,7 @@ package com.chromsicle.quizdelight;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -16,6 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class QuizActivity extends AppCompatActivity {
+    //used to send the score result to the main activity
+    public static final String EXTRA_SCORE = "extraScore";
+
 
     //create variables to get references to all the views in the layout
     private TextView textViewQuestion;
@@ -40,6 +44,8 @@ public class QuizActivity extends AppCompatActivity {
 
     private int score;
     private boolean answered;
+
+    private long backPressedTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,6 +186,24 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void finishQuiz() {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(EXTRA_SCORE, score);
+        //later the result will be used in the main activity to check if it's a high score
+        setResult(RESULT_OK, resultIntent);
         finish();
+    }
+
+    //deal with the back button being pressed
+    @Override
+    public void onBackPressed() {
+        if (backPressedTime + 2000 > System.currentTimeMillis()) {
+            //if the time between pressing it twice is less than 2 seconds
+            finishQuiz();
+        } else {
+            //more than 2 seconds have passed since back button was pressed
+            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show();
+        }
+
+        backPressedTime = System.currentTimeMillis();
     }
 }
